@@ -67,7 +67,7 @@
     </main>
 
     <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800">
-        Live verbonden met de openbare SLO Curriculum API via een CORS proxy.
+        Live verbonden met de openbare SLO Curriculum API via AllOrigins GET-proxy.
     </footer>
 
     <script>
@@ -81,7 +81,7 @@
             // UI Reset
             grid.innerHTML = '';
             status.className = "text-center p-6 rounded-xl mb-6 font-medium text-sm bg-blue-50 text-blue-700 block animate-pulse";
-            status.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Live data ophalen via veilige proxy...`;
+            status.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Live data ophalen via stabiele GET-proxy...`;
 
             if(!vakInput) {
                 status.className = "text-center p-6 rounded-xl mb-6 font-medium text-sm bg-amber-50 text-amber-700 block";
@@ -89,41 +89,29 @@
                 return;
             }
 
-            // GraphQL Query naar SLO
-            const graphqlQuery = {
-                query: `{
-                    Doel(limit: 1000) {
-                        id
-                        title
-                        prefix
-                        Doelniveau {
-                            title
-                        }
-                    }
-                }`
-            };
-
-            // Publieke proxy om de browserbeveiliging (CORS) te omzeilen
-            const proxyUrl = 'https://corsproxy.io/?';
-            const targetUrl = 'https://opendata.slo.nl/curriculum/api/v1/graphql';
+            // We bouwen de GraphQL query nu om tot een GET-parameter string
+            const graphqlQuery = `{Doel(limit:1000){id title prefix Doelniveau{title}}}`;
+            
+            // De complete SLO doel-URL als een GET verzoek
+            const targetUrl = `https://opendata.slo.nl/curriculum/api/v1/graphql?query=${encodeURIComponent(graphqlQuery)}`;
+            
+            // We gebruiken AllOrigins (een zeer betrouwbare CORS-proxy voor GET-requests)
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
 
             try {
-                const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(graphqlQuery)
-                });
+                const response = await fetch(proxyUrl);
 
                 if (!response.ok) {
-                    throw new Error(`Server reageerde met status ${response.status}`);
+                    throw new Error(`Proxy reageerde met status ${response.status}`);
                 }
 
-                const result = await response.json();
+                const proxyResult = await response.json();
                 
-                if (!result.data || !result.data.Doel) {
-                    throw new Error("Ongeldige data ontvangen uit de SLO database.");
+                // AllOrigins stopt de echte response als tekst in 'contents'
+                const result = JSON.parse(proxyResult.contents);
+                
+                if (!result || !result.data || !result.data.Doel) {
+                    throw new Error("Geen geldige curriculum data gevonden in het API antwoord.");
                 }
 
                 const doelen = result.data.Doel;
@@ -176,7 +164,7 @@
 
             } catch (error) {
                 status.className = "text-center p-6 rounded-xl mb-6 font-medium text-sm bg-rose-50 text-rose-700 block";
-                status.innerHTML = `<i class="fa-solid fa-circle-xmark mr-2"></i> Er ging iets fout bij de API-aanvraag: ${error.message}<br><span class="text-xs text-rose-400 font-normal">Controleer je internetverbinding of de proxy status.</span>`;
+                status.innerHTML = `<i class="fa-solid fa-circle-xmark mr-2"></i> Er ging iets fout bij de API-aanvraag: ${error.message}<br><span class="text-xs text-rose-400 font-normal">Controleer of de zoekterm klopt of probeer het zo meteen nog eens.</span>`;
             }
         }
     </script>
