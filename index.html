@@ -11,112 +11,85 @@
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased">
 
     <header class="bg-gradient-to-r from-indigo-700 to-blue-800 text-white shadow-md p-6 text-center">
-        <h1 class="text-3xl font-extrabold tracking-tight"><i class="fa-solid fa-network-wired mr-3"></i>SLO Curriculum Matrix Dashboard</h1>
-        <p class="text-indigo-100 mt-2 text-sm md:text-base">Zet elke SLO Leerplan-in-Beeld Excel-export om in interactieve kaarten of een visuele matrix.</p>
+        <h1 class="text-3xl font-extrabold tracking-tight"><i class="fa-solid fa-wand-magic-sparkles mr-3"></i>SLO Smart Dashboard</h1>
+        <p class="text-indigo-100 mt-2 text-sm md:text-base">Upload je bestand. De filters worden automatisch voor je opgebouwd!</p>
     </header>
 
     <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl">
         
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-            <div class="text-center border-dashed border-2 border-indigo-200 p-6 rounded-xl bg-slate-50/50">
-                <h2 class="text-lg font-bold text-slate-900 mb-1">
-                    <i class="fa-solid fa-file-excel text-emerald-600 mr-2"></i> Stap 1: Selecteer je gedownloade SLO Excel-bestand
-                </h2>
-                <p class="text-xs text-slate-500 mb-4">Sleep het bestand hiernaartoe of klik op de knop om te uploaden.</p>
-                
-                <div class="max-w-md mx-auto">
-                    <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="processExcelFile(event)" 
-                           class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 file:cursor-pointer cursor-pointer shadow-sm" />
-                </div>
-                <div id="file-status" class="mt-3 text-sm font-semibold text-emerald-600 hidden"></div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 text-center border-dashed border-2 border-indigo-200">
+            <h2 class="text-lg font-bold text-slate-900 mb-1">
+                <i class="fa-solid fa-file-excel text-emerald-600 mr-2"></i> Stap 1: Selecteer je SLO Excel-bestand
+            </h2>
+            <div class="max-w-md mx-auto mt-4">
+                <input type="file" id="excel-file" accept=".xlsx, .xls, .csv" onchange="processExcelFile(event)" 
+                       class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer shadow-sm" />
             </div>
-
-            <div id="mapping-panel" class="hidden mt-6 pt-6 border-t border-slate-200">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3"><i class="fa-solid fa-gears mr-1"></i> Controleer de kolom-koppeling uit jouw Excel:</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Domein / Rubriek:</label>
-                        <select id="map-domein" onchange="remapColumns()" class="w-full p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600"></select>
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Subdomein:</label>
-                        <select id="map-subdomein" onchange="remapColumns()" class="w-full p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600"></select>
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Code / Kenmerk:</label>
-                        <select id="map-code" onchange="remapColumns()" class="w-full p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600"></select>
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Inhoud / Leerdoel:</label>
-                        <select id="map-doel" onchange="remapColumns()" class="w-full p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600"></select>
-                    </div>
-                </div>
-            </div>
+            <div id="file-status" class="mt-3 text-sm font-semibold text-emerald-600 hidden"></div>
         </div>
 
         <div id="dashboard-core" class="opacity-40 pointer-events-none transition-all duration-300">
             
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
                 <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center">
-                    <i class="fa-solid fa-sliders text-indigo-600 mr-2"></i> Stap 2: Combineer filters & kies weergave
+                    <i class="fa-solid fa-filter text-indigo-600 mr-2"></i> Stap 2: Dynamisch gegenereerde filters
                 </h2>
                 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     
-                    <div class="lg:col-span-3">
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Snelkoppelingen Niveau/Fase</label>
-                        <div id="checkbox-container" class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm max-h-48 overflow-y-auto">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Vak / Vakgebied</label>
+                        <select id="dynamic-vak-filter" onchange="runFiltering()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-600 transition">
+                            <option value="ALL">-- Alle Vakken --</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Gevonden Niveaus</label>
+                        <div id="dynamic-niveau-container" class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm h-32 overflow-y-auto">
                             </div>
                     </div>
 
-                    <div class="lg:col-span-5">
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Vrije tekstzoekterm (Vak, Vaardigheid, Onderwerp)</label>
-                        <div class="relative mb-2">
-                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                            <input type="text" id="free-search" oninput="runFiltering()" placeholder="Typ hier (bijv. duits, engels, schrijven, lezen)..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 p-3 text-sm focus:outline-none focus:border-indigo-600 transition">
-                        </div>
-                        <p class="text-3xs text-slate-400"><i class="fa-solid fa-info-circle"></i> Typen verfijnt direct de geselecteerde vinkjes hiernaast.</p>
-                    </div>
-
-                    <div class="lg:col-span-4 flex flex-col justify-between h-full min-h-[90px]">
+                    <div class="flex flex-col justify-between">
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kies Lay-out</label>
-                            <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
-                                <button onclick="toggleViewMode('cards')" id="btn-view-cards" class="bg-white text-indigo-700 shadow-sm text-xs font-bold py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-address-card"></i> Leerdoelkaarten
-                                </button>
-                                <button onclick="toggleViewMode('matrix')" id="btn-view-matrix" class="text-slate-600 text-xs font-bold py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-table-cells-large"></i> Visuele Matrix
-                                </button>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Specifiek Woord Zoeken</label>
+                            <div class="relative mb-4">
+                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+                                <input type="text" id="free-search" oninput="runFiltering()" placeholder="Zoek op tekst..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 p-3 text-sm focus:outline-none focus:border-indigo-600 transition">
                             </div>
                         </div>
-                        <div class="bg-slate-900 text-white p-2.5 rounded-xl text-center text-xs font-mono mt-3 shadow-inner">
-                            <span id="counter-label">0 doelen geselecteerd</span>
+                        
+                        <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+                            <button onclick="toggleViewMode('cards')" id="btn-view-cards" class="bg-white text-indigo-700 shadow-sm text-xs font-bold py-2.5 rounded-lg transition">
+                                <i class="fa-solid fa-address-card mr-1"></i> Kaarten
+                            </button>
+                            <button onclick="toggleViewMode('matrix')" id="btn-view-matrix" class="text-slate-600 text-xs font-bold py-2.5 rounded-lg transition">
+                                <i class="fa-solid fa-table-cells mr-1"></i> Matrix
+                            </button>
                         </div>
                     </div>
-
+                </div>
+                
+                <div class="bg-slate-900 text-white p-2 mt-4 rounded-xl text-center text-xs font-mono shadow-inner w-full">
+                    <span id="counter-label">0 doelen geselecteerd</span>
                 </div>
             </div>
 
             <div id="view-container-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-
             <div id="view-container-matrix" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto p-2"></div>
 
         </div>
     </main>
 
-    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-12">
-        Aangedreven door veilige lokale browser-verwerking van SLO data.
-    </footer>
-
     <script>
-        let excelHeaders = [];
-        let excelRowsArray = [];
-        let parsedObjectsDataset = [];
+        let rawDataObjects = [];
         let activeViewMode = 'cards';
-
-        // Kolom Mapping Indices
-        let mapIdx = { domein: -1, subdomein: -1, code: -1, doel: -1 };
+        
+        // Welke kolommen gebruiken we als referentie?
+        let colVak = "";
+        let colNiveau = "";
+        let colDomein = "";
+        let colDoel = "";
 
         function processExcelFile(e) {
             const file = e.target.files[0];
@@ -124,235 +97,212 @@
 
             const reader = new FileReader();
             reader.onload = function(evt) {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    
-                    // We lezen de sheet in als een rauwe matrix (array van arrays) om lege header-rijen te omzeilen!
-                    const rawMatrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-                    
-                    if (rawMatrix.length === 0) throw new Error("Het bestand is leeg.");
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                
+                // Converteer naar een lijst van Javascript objecten
+                let rawJson = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                if (rawJson.length === 0) return alert("Bestand is leeg!");
 
-                    // Sla op en vind de echte start van de tabel (waar de headers staan)
-                    findActualTableHeaders(rawMatrix);
+                const headers = Object.keys(rawJson[0]);
+                
+                // --- SLIMME KOLOM DETECTIE ---
+                // We zoeken naar veelvoorkomende kolomnamen in SLO bestanden
+                colVak = headers.find(h => h.toUpperCase().includes('VAK')) || headers[0];
+                colNiveau = headers.find(h => h.toUpperCase().includes('NIVEAU')) || headers.find(h => h.toUpperCase().includes('FASE')) || headers[1];
+                colDomein = headers.find(h => h.toUpperCase().includes('DOMEIN')) || headers.find(h => h.toUpperCase().includes('LABEL')) || headers[2];
+                colDoel = headers.find(h => h.toUpperCase().includes('DOEL')) || headers.find(h => h.toUpperCase().includes('TERM')) || headers[3];
 
-                    document.getElementById('file-status').innerHTML = `<i class="fa-solid fa-circle-check"></i> ${file.name} succesvol ingeladen!`;
-                    document.getElementById('file-status').classList.remove('hidden');
-                    document.getElementById('dashboard-core').classList.remove('opacity-40', 'pointer-events-none');
-                    document.getElementById('mapping-panel').classList.remove('hidden');
+                rawDataObjects = rawJson;
 
-                } catch (err) {
-                    alert("Fout bij verwerken bestand: " + err.message);
-                }
+                buildDynamicFilters();
+
+                document.getElementById('file-status').innerHTML = `<i class="fa-solid fa-circle-check"></i> ${file.name} ingeladen!`;
+                document.getElementById('file-status').classList.remove('hidden');
+                document.getElementById('dashboard-core').classList.remove('opacity-40', 'pointer-events-none');
+                
+                runFiltering();
             };
             reader.readAsArrayBuffer(file);
         }
 
-        function findActualTableHeaders(matrix) {
-            let headerRowIndex = 0;
-            
-            // Loop door de rijen om de rij te vinden die curriculum headers bevat
-            for (let i = 0; i < Math.min(matrix.length, 10); i++) {
-                const rowStr = matrix[i].join(" ").toLowerCase();
-                if (rowStr.includes("domein") || rowStr.includes("subdomein") || rowStr.includes("code") || rowStr.includes("omschrijving") || rowStr.includes("doel")) {
-                    headerRowIndex = i;
-                    break;
+        function buildDynamicFilters() {
+            let setVakken = new Set();
+            let setNiveaus = new Set();
+
+            rawDataObjects.forEach(row => {
+                // Verzamel unieke vakken
+                let vak = String(row[colVak] || "").trim();
+                if (vak && vak !== "undefined") setVakken.add(vak);
+
+                // Verzamel unieke niveaus (soms staan er meerdere in 1 cel gescheiden door komma's)
+                let nivStr = String(row[colNiveau] || "");
+                if (nivStr && nivStr !== "undefined") {
+                    let parts = nivStr.split(',');
+                    parts.forEach(p => {
+                        let cleanPart = p.trim();
+                        if(cleanPart) setNiveaus.add(cleanPart);
+                    });
                 }
-            }
-
-            excelHeaders = matrix[headerRowIndex].map(h => String(h).trim());
-            excelRowsArray = matrix.slice(headerRowIndex + 1).filter(row => row.some(cell => cell !== ""));
-
-            // Vul de dropdown selectors voor kolommen
-            populateDropdown('map-domein', excelHeaders, "domein");
-            populateDropdown('map-subdomein', excelHeaders, "sub");
-            populateDropdown('map-code', excelHeaders, "code");
-            populateDropdown('map-doel', excelHeaders, "doel");
-
-            // Bouw de niveau vinkjes op basis van kolommen
-            buildNiveauCheckboxes();
-            
-            // Bouw dataset objecten
-            remapColumns();
-        }
-
-        function populateDropdown(selectId, headers, keyword) {
-            const select = document.getElementById(selectId);
-            select.innerHTML = '';
-            let targetIdx = -1;
-
-            headers.forEach((h, idx) => {
-                const option = document.createElement('option');
-                option.value = idx;
-                option.text = h || `Kolom ${idx + 1}`;
-                
-                // Slimme automatische match selectie
-                if (h.toLowerCase().includes(keyword) && targetIdx === -1) {
-                    targetIdx = idx;
-                }
-                select.appendChild(option);
             });
 
-            // Fallback toekenning als er geen match is
-            if (targetIdx === -1) {
-                if (keyword === "domein") targetIdx = 0;
-                if (keyword === "sub") targetIdx = 1;
-                if (keyword === "code") targetIdx = 2;
-                if (keyword === "doel") targetIdx = Math.min(3, headers.length - 1);
-            }
-            select.value = targetIdx;
-        }
+            // Bouw Dropdown voor Vakken
+            const vakSelect = document.getElementById('dynamic-vak-filter');
+            vakSelect.innerHTML = '<option value="ALL">-- Alle Vakken --</option>';
+            Array.from(setVakken).sort().forEach(v => {
+                let opt = document.createElement('option');
+                opt.value = v.toLowerCase();
+                opt.text = v;
+                vakSelect.appendChild(opt);
+            });
 
-        function buildNiveauCheckboxes() {
-            const container = document.getElementById('checkbox-container');
-            container.innerHTML = '';
-
-            // We maken handige filters voor veelvoorkomende niveaus
-            const standards = ['mavo', 'havo', 'vwo', 'vmbo', 'onderbouw', 'bovenbouw', 'leerjaar 1', 'leerjaar 2', 'leerjaar 3'];
-            
-            standards.forEach(nivel => {
+            // Bouw Checkboxes voor Niveaus
+            const nivContainer = document.getElementById('dynamic-niveau-container');
+            nivContainer.innerHTML = '';
+            Array.from(setNiveaus).sort().forEach(n => {
                 const label = document.createElement('label');
-                label.className = "flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition font-medium text-slate-700 text-xs capitalize";
-                label.innerHTML = `<input type="checkbox" class="nivel-cb rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" value="${nivel}" checked onchange="runFiltering()"> ${nivel}`;
-                container.appendChild(label);
+                label.className = "flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition font-medium text-slate-700 text-xs";
+                // We vinken ze standaard allemaal UIT, zodat de gebruiker gericht kan zoeken
+                label.innerHTML = `<input type="checkbox" class="dyn-niv-cb rounded border-slate-300 text-indigo-600" value="${n.toLowerCase()}" onchange="runFiltering()"> ${n}`;
+                nivContainer.appendChild(label);
             });
-        }
-
-        function remapColumns() {
-            mapIdx.domein = parseInt(document.getElementById('map-domein').value);
-            mapIdx.subdomein = parseInt(document.getElementById('map-subdomein').value);
-            mapIdx.code = parseInt(document.getElementById('map-code').value);
-            mapIdx.doel = parseInt(document.getElementById('map-doel').value);
-
-            // Converteer rijen naar bruikbare objecten structuren
-            parsedObjectsDataset = excelRowsArray.map(row => {
-                return {
-                    domein: row[mapIdx.domein] || "Algemeen",
-                    subdomein: row[mapIdx.subdomein] || "",
-                    code: row[mapIdx.code] || "LEERDOEL",
-                    doel: row[mapIdx.doel] || "Geen omschrijving gevonden",
-                    volledigeRijTekst: row.join(" ").toLowerCase()
-                };
-            });
-
-            runFiltering();
         }
 
         function runFiltering() {
-            if (parsedObjectsDataset.length === 0) return;
-
             const query = document.getElementById('free-search').value.toLowerCase().trim();
-            const activeNiveaus = Array.from(document.querySelectorAll('.nivel-cb:checked')).map(cb => cb.value);
+            const selectedVak = document.getElementById('dynamic-vak-filter').value;
+            const checkedNiveaus = Array.from(document.querySelectorAll('.dyn-niv-cb:checked')).map(cb => cb.value);
 
-            const gefilterdeData = parsedObjectsDataset.filter(item => {
-                // 1. Text search match
-                const matchQuery = item.volledigeRijTekst.includes(query);
+            const gefilterdeData = rawDataObjects.filter(row => {
+                let rowTekst = Object.values(row).join(" ").toLowerCase();
+                
+                // 1. Check vrij zoeken
+                let matchQuery = query === "" || rowTekst.includes(query);
 
-                // 2. Niveau match
-                let matchNiveau = activeNiveaus.length === 0;
-                for (let nv of activeNiveaus) {
-                    if (item.volledigeRijTekst.includes(nv)) {
-                        matchNiveau = true;
-                        break;
+                // 2. Check Vak
+                let rowVak = String(row[colVak] || "").toLowerCase();
+                let matchVak = selectedVak === "ALL" || rowVak === selectedVak;
+
+                // 3. Check Niveau (Als er niks is aangevinkt, tonen we alles)
+                let matchNiveau = checkedNiveaus.length === 0;
+                let rowNiveauText = String(row[colNiveau] || "").toLowerCase();
+                
+                if (checkedNiveaus.length > 0) {
+                    for (let nv of checkedNiveaus) {
+                        // Kijkt of het specifieke niveau in deze rij voorkomt
+                        if (rowNiveauText.includes(nv)) {
+                            matchNiveau = true;
+                            break;
+                        }
                     }
                 }
-                return matchQuery && matchNiveau;
+
+                return matchQuery && matchVak && matchNiveau;
             });
 
-            document.getElementById('counter-label').innerText = `${gefilterdeData.length} doelen actief`;
+            document.getElementById('counter-label').innerText = `${gefilterdeData.length} resultaten gevonden`;
 
-            if (activeViewMode === 'cards') {
-                renderCardsLayout(gefilterdeData);
-            } else {
-                renderMatrixLayout(gefilterdeData);
-            }
+            if (activeViewMode === 'cards') renderCards(gefilterdeData);
+            else renderMatrix(gefilterdeData);
         }
 
         function toggleViewMode(mode) {
             activeViewMode = mode;
             const btnCards = document.getElementById('btn-view-cards');
             const btnMatrix = document.getElementById('btn-view-matrix');
-            const boxCards = document.getElementById('view-container-cards');
-            const boxMatrix = document.getElementById('view-container-matrix');
-
+            
             if (mode === 'cards') {
-                btnCards.className = "bg-white text-indigo-700 shadow-sm text-xs font-bold py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2";
-                btnMatrix.className = "text-slate-600 text-xs font-bold py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2";
-                boxCards.classList.remove('hidden');
-                boxMatrix.classList.add('hidden');
+                btnCards.classList.replace('text-slate-600', 'text-indigo-700');
+                btnCards.classList.replace('bg-transparent', 'bg-white');
+                btnCards.classList.add('shadow-sm');
+                
+                btnMatrix.classList.replace('text-indigo-700', 'text-slate-600');
+                btnMatrix.classList.replace('bg-white', 'bg-transparent');
+                btnMatrix.classList.remove('shadow-sm');
+                
+                document.getElementById('view-container-cards').classList.remove('hidden');
+                document.getElementById('view-container-matrix').classList.add('hidden');
             } else {
-                btnMatrix.className = "bg-white text-indigo-700 shadow-sm text-xs font-bold py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2";
-                btnCards.className = "text-slate-600 text-xs font-bold py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2";
-                boxMatrix.classList.remove('hidden');
-                boxCards.classList.add('hidden');
+                btnMatrix.classList.replace('text-slate-600', 'text-indigo-700');
+                btnMatrix.classList.replace('bg-transparent', 'bg-white');
+                btnMatrix.classList.add('shadow-sm');
+                
+                btnCards.classList.replace('text-indigo-700', 'text-slate-600');
+                btnCards.classList.replace('bg-white', 'bg-transparent');
+                btnCards.classList.remove('shadow-sm');
+                
+                document.getElementById('view-container-matrix').classList.remove('hidden');
+                document.getElementById('view-container-cards').classList.add('hidden');
             }
             runFiltering();
         }
 
-        function renderCardsLayout(data) {
-            const target = document.getElementById('view-container-cards');
-            target.innerHTML = '';
+        function renderCards(data) {
+            const container = document.getElementById('view-container-cards');
+            container.innerHTML = '';
 
-            if (data.length === 0) {
-                target.innerHTML = `<div class="col-span-full text-center p-12 bg-white rounded-2xl text-slate-400 text-sm border border-slate-200">Geen doelen gevonden voor deze filtercombinatie.</div>`;
+            if(data.length === 0) {
+                container.innerHTML = `<div class="col-span-full p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200">Geen data gevonden met deze filters.</div>`;
                 return;
             }
 
-            data.forEach((item, i) => {
+            // We tonen max 100 kaarten om de browser niet te laten vastlopen
+            const displayData = data.slice(0, 100);
+
+            displayData.forEach((item, index) => {
+                let vak = item[colVak] || 'Onbekend vak';
+                let domein = item[colDomein] || '';
+                let doel = item[colDoel] || 'Geen omschrijving';
+                let niveau = item[colNiveau] || '';
+
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl border border-slate-200 p-5 flex flex-col justify-between border-l-4 border-l-indigo-600 shadow-xs hover:shadow-md transition duration-200";
+                card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-indigo-500 flex flex-col justify-between";
                 card.innerHTML = `
                     <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="bg-indigo-50 text-indigo-700 text-2xs font-mono font-bold px-2 py-0.5 rounded tracking-wide">${item.code}</span>
-                            <span class="text-slate-300 text-3xs font-mono">RIJ ${i+1}</span>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-1 rounded">${vak}</span>
+                            <span class="text-slate-400 text-xs text-right max-w-[50%] truncate">${niveau}</span>
                         </div>
-                        <h4 class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider mb-1">${item.domein} ${item.subdomein ? ' • ' + item.subdomeid : ''}</h4>
-                        <p class="text-slate-800 text-xs font-semibold leading-relaxed">${item.doel}</p>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-3xs text-slate-400">
-                        <span class="font-medium"><i class="fa-solid fa-graduation-cap text-indigo-500 mr-1"></i> SLO Curriculum</span>
-                        <button onclick="this.closest('.bg-white').classList.toggle('bg-emerald-50/60')" class="text-slate-300 hover:text-emerald-600 transition text-sm">
-                            <i class="fa-regular fa-square-check text-base"></i>
-                        </button>
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mt-3 mb-1">${domein}</h4>
+                        <p class="text-sm font-medium text-slate-800 leading-relaxed">${doel}</p>
                     </div>
                 `;
-                target.appendChild(card);
+                container.appendChild(card);
             });
+            
+            if(data.length > 100) {
+                container.innerHTML += `<div class="col-span-full p-4 text-center text-xs text-slate-500 bg-indigo-50 rounded-xl">Er zijn nog ${data.length - 100} extra resultaten. Maak je zoekopdracht specifieker.</div>`;
+            }
         }
 
-        function renderMatrixLayout(data) {
-            const target = document.getElementById('view-container-matrix');
-            target.innerHTML = '';
-
-            if (data.length === 0) {
-                target.innerHTML = `<div class="text-center p-12 text-slate-400 text-sm">Geen matrix data beschikbaar.</div>`;
+        function renderMatrix(data) {
+            const container = document.getElementById('view-container-matrix');
+            if(data.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-400">Geen data gevonden met deze filters.</div>`;
                 return;
             }
 
-            let html = `<table class="w-full text-left border-collapse text-xs">
-                <thead>
-                    <tr class="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase tracking-wider font-bold">
-                        <th class="p-3 border-r border-slate-200">Domein</th>
-                        <th class="p-3 border-r border-slate-200">Subdomein</th>
-                        <th class="p-3 border-r border-slate-200">Code</th>
-                        <th class="p-3">Omschrijving / Leerdoel</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">`;
+            const headers = Object.keys(data[0]);
+            let html = `<table class="w-full text-left text-xs border-collapse"><thead><tr class="bg-slate-100 border-b border-slate-200">`;
+            
+            headers.forEach(h => {
+                html += `<th class="p-3 font-bold text-slate-700 whitespace-nowrap">${h}</th>`;
+            });
+            html += `</tr></thead><tbody class="divide-y divide-slate-100">`;
 
-            data.forEach(item => {
-                html += `<tr class="hover:bg-slate-50/80 transition align-top">
-                    <td class="p-3 font-bold text-slate-900 border-r border-slate-200 max-w-[150px]">${item.domein}</td>
-                    <td class="p-3 font-medium text-slate-600 border-r border-slate-200 max-w-[150px]">${item.subdomein || '-'}</td>
-                    <td class="p-3 font-mono font-bold text-indigo-600 border-r border-slate-200">${item.code}</td>
-                    <td class="p-3 text-slate-700 font-medium leading-relaxed">${item.doel}</td>
-                </tr>`;
+            // Max 200 rijen voor de tabel performance
+            data.slice(0, 200).forEach(row => {
+                html += `<tr class="hover:bg-slate-50 transition">`;
+                headers.forEach(h => {
+                    html += `<td class="p-3 text-slate-600 max-w-[200px] truncate" title="${row[h]}">${row[h] || '-'}</td>`;
+                });
+                html += `</tr>`;
             });
 
             html += `</tbody></table>`;
-            target.innerHTML = html;
+            if(data.length > 200) html += `<div class="p-3 text-center text-xs text-slate-500 bg-indigo-50">Tabel afgekapt op 200 rijen wegens prestaties.</div>`;
+            container.innerHTML = html;
         }
     </script>
 </body>
