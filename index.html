@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SLO Leerdoelen Dashboard (Excel Versie)</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>SLO Leerdoelen Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -21,32 +21,33 @@
             <h2 class="text-lg font-bold text-slate-950 mb-2">
                 <i class="fa-solid fa-cloud-arrow-up text-indigo-600 mr-2"></i> Stap 1: Selecteer je SLO Excel-bestand
             </h2>
-            <p class="text-xs text-slate-500 mb-4">Selecteer het .xlsx bestand dat je van de SLO website hebt gedownload.</p>
+            <p class="text-xs text-slate-500 mb-4">Kies het .xlsx bestand dat je van de SLO website hebt gedownload.</p>
             
-            <label class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-sm cursor-pointer mx-auto">
-                <i class="fa-solid fa-file-import"></i> Kies Excel Bestand
-                <input type="file" id="excel-file" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
-            </label>
+            <div class="max-w-md mx-auto p-4 bg-indigo-50 rounded-xl border border-indigo-100 shadow-inner">
+                <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="handleExcelUpload(event)" 
+                       class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 file:cursor-pointer cursor-pointer" />
+            </div>
+            
             <div id="file-info" class="mt-3 text-sm font-semibold text-emerald-600 hidden"></div>
         </div>
 
-        <div id="filter-panel" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 opacity-50 pointer-events-none transition-all">
+        <div id="filter-panel" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 opacity-40 pointer-events-none transition-all">
             <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-                <i class="fa-solid fa-sliders text-indigo-600 mr-2"></i> Stap 2: Filter je Matrix
+                <i class="fa-solid fa-sliders text-indigo-600 mr-2"></i> Stap 2: Filter of zoek in je Matrix
             </h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Zoekterm (Vak, Domein of Code)</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Zoekterm (Vak, Domein, Subdomein of Code)</label>
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                        <input type="text" id="search-input" oninput="filterExcelData()" placeholder="bijv. duits, engels, subdomein, schrijven" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 p-3 text-sm focus:outline-none focus:border-indigo-600 transition">
+                        <input type="text" id="search-input" oninput="filterExcelData()" placeholder="Typ hier om live te zoeken (bijv. duits, engels, lezen)..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 p-3 text-sm focus:outline-none focus:border-indigo-600 transition">
                     </div>
                 </div>
 
                 <div class="flex flex-col justify-center bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status Matrix</span>
-                    <span id="row-count" class="text-xl font-extrabold text-indigo-600 mt-1">Geen bestand ingeladen</span>
+                    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status van de import</span>
+                    <span id="row-count" class="text-lg font-extrabold text-indigo-600 mt-1">Eerst Excel-bestand selecteren</span>
                 </div>
             </div>
         </div>
@@ -57,41 +58,41 @@
     </main>
 
     <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800">
-        100% Privacy & Uptime. Alle data wordt veilig binnen je eigen browser verwerkt.
+        100% Privacy. Alle data wordt uitsluitend binnen je eigen browser verwerkt.
     </footer>
 
     <script>
-        let excelRawData = []; // Hier slaan we de rijen uit Excel tijdelijk in op
+        let excelRawData = []; 
 
         function handleExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Toon bestandsnaam
             const fileInfo = document.getElementById('file-info');
             fileInfo.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${file.name} succesvol ingeladen!`;
             fileInfo.classList.remove('hidden');
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                
-                // Pak het eerste werkblad uit de Excel
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                
-                // Converteer het blad naar een handige lijst van objecten (rijen)
-                excelRawData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    excelRawData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-                // Activeer het filterpaneel
-                const filterPanel = document.getElementById('filter-panel');
-                filterPanel.classList.remove('opacity-50', 'pointer-events-none');
+                    // Activeer het filterpaneel zodra de data er is
+                    const filterPanel = document.getElementById('filter-panel');
+                    filterPanel.classList.remove('opacity-40', 'pointer-events-none');
 
-                document.getElementById('row-count').innerText = `${excelRawData.length} rijen ingeladen`;
-                
-                // Voer direct een eerste filter/weergave uit
-                filterExcelData();
+                    document.getElementById('row-count').innerText = `${excelRawData.length} rijen ingeladen uit Excel`;
+                    
+                    filterExcelData();
+                } catch (err) {
+                    alert("Fout bij het lezen van het Excel bestand: " + err.message);
+                }
             };
             reader.readAsArrayBuffer(file);
         }
@@ -103,47 +104,43 @@
 
             if (excelRawData.length === 0) return;
 
-            // Filter de rijen waar een van de cellen de zoekterm bevat
             const gefilterdeRijen = excelRawData.filter(row => {
-                // Maak één lange tekst van de hele rij om makkelijk te zoeken
                 const rijTekst = Object.values(row).join(" ").toLowerCase();
                 return rijTekst.includes(query);
             });
 
-            document.getElementById('row-count').innerText = `${gefilterdeRijen.length} van de ${excelRawData.length} rijen zichtbaar`;
+            document.getElementById('row-count').innerText = `${gefilterdeRijen.length} van de ${excelRawData.length} rijen getoond`;
 
             if (gefilterdeRijen.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full text-center p-8 bg-slate-100 rounded-xl text-sm text-slate-500">
-                        <i class="fa-solid fa-face-frown mr-2"></i> Geen resultaten gevonden voor deze zoekterm.
+                        <i class="fa-solid fa-face-frown mr-2"></i> Geen data gevonden voor deze zoekterm.
                     </div>
                 `;
                 return;
             }
 
-            // Bouw de kaarten op basis van de Excel kolommen
             gefilterdeRijen.forEach((row, index) => {
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-6 flex flex-col justify-between border-l-4 border-l-indigo-600 animate-fadeIn";
+                card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-6 flex flex-col justify-between border-l-4 border-l-indigo-600";
                 
-                // We proberen dynamisch de belangrijkste kolommen te pakken.
-                // Als de kolomnamen in jouw Excel anders zijn, pakt hij automatisch de 1e, 2e en 3e cel.
                 const keys = Object.keys(row);
-                const hoofdtitel = row['Doel'] || row['Title'] || row['Omschrijving'] || row[keys[2]] || 'Geen omschrijving';
-                const domein = row['Domein'] || row['Subdomein'] || row[keys[0]] || 'Algemeen';
-                const code = row['Code'] || row['Prefix'] || row[keys[1]] || `Rij ${index + 1}`;
+                // Dynamische kolom herkenning op basis van veelvoorkomende SLO termen
+                const hoofdtitel = row['Doel'] || row['Title'] || row['Omschrijving'] || row['Eindterm'] || row[keys[2]] || 'Geen omschrijving';
+                const domein = row['Domein'] || row['Subdomein'] || row['Rubriek'] || row[keys[0]] || 'Algemeen';
+                const code = row['Code'] || row['Prefix'] || row['Id'] || row[keys[1]] || `#${index + 1}`;
 
                 card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start mb-3">
                             <span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-md tracking-wide font-mono uppercase">${code}</span>
-                            <span class="text-slate-400 text-2xs font-mono">INDEX: #${index + 1}</span>
+                            <span class="text-slate-400 text-2xs font-mono">RIJ: ${index + 1}</span>
                         </div>
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">${domein}</h3>
                         <p class="text-slate-800 text-sm font-medium leading-relaxed">${hoofdtitel}</p>
                     </div>
                     <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                        <span><i class="fa-solid fa-table-list mr-1.5 text-slate-400"></i>Geïmporteerd uit Excel</span>
+                        <span><i class="fa-solid fa-table-list mr-1.5 text-slate-400"></i>Geïmporteerde Rij</span>
                         <button onclick="this.closest('.bg-white').classList.toggle('bg-emerald-50')" class="text-slate-400 hover:text-emerald-600 transition cursor-pointer" title="Markeer als behandeld">
                             <i class="fa-regular fa-square-check text-base"></i>
                         </button>
