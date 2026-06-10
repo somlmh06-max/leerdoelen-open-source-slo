@@ -7,17 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        /* Speciale instellingen voor de PDF export */
+        @media print {
+            @page { margin: 1.5cm; } /* Witte marges op het A4'tje */
+            body { background-color: white !important; }
+            /* Zorgt dat kaarten mooi naast elkaar staan op A4 en niet halverwege afbreken */
+            #view-container-cards { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; }
+            .print-card { break-inside: avoid !important; page-break-inside: avoid !important; box-shadow: none !important; border: 1px solid #cbd5e1 !important; border-left: 4px solid #4f46e5 !important; }
+            .print-matrix { font-size: 10px !important; }
+        }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased print:bg-white">
 
-    <header class="bg-gradient-to-r from-indigo-700 to-blue-800 text-white shadow-md p-6 text-center">
+    <header class="bg-gradient-to-r from-indigo-700 to-blue-800 text-white shadow-md p-6 text-center print:hidden">
         <h1 class="text-3xl font-extrabold tracking-tight"><i class="fa-solid fa-map-location-dot mr-3"></i>SLO Smart Dashboard</h1>
-        <p class="text-indigo-100 mt-2 text-sm md:text-base">Upload je bestand en bepaal zelf hoe de kolommen gekoppeld worden.</p>
+        <p class="text-indigo-100 mt-2 text-sm md:text-base">Genereer en exporteer je leerdoelkaarten naar PDF.</p>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl print:p-0 print:m-0">
         
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 print:hidden">
             <div class="text-center border-dashed border-2 border-indigo-200 p-6 rounded-xl bg-slate-50/50">
                 <h2 class="text-lg font-bold text-slate-900 mb-1">
                     <i class="fa-solid fa-file-excel text-emerald-600 mr-2"></i> Stap 1: Selecteer je SLO Excel-bestand
@@ -31,8 +42,6 @@
 
             <div id="mapping-panel" class="hidden mt-6 pt-6 border-t border-slate-200">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3"><i class="fa-solid fa-gears text-indigo-500 mr-1"></i> Controleer de kolom-koppeling:</h3>
-                <p class="text-xs text-slate-400 mb-4">Staan er gekke zinnen bij de filters? Verander dan hieronder de kolom naar de juiste.</p>
-                
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Vak / Sector:</label>
@@ -54,25 +63,27 @@
             </div>
         </div>
 
-        <div id="dashboard-core" class="opacity-40 pointer-events-none transition-all duration-300">
+        <div id="dashboard-core" class="opacity-40 pointer-events-none transition-all duration-300 print:opacity-100">
             
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center">
-                    <i class="fa-solid fa-filter text-indigo-600 mr-2"></i> Stap 2: Filters & Weergave
-                </h2>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 print:hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base font-bold text-slate-900 flex items-center">
+                        <i class="fa-solid fa-filter text-indigo-600 mr-2"></i> Stap 2: Filters & Weergave
+                    </h2>
+                    <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-file-pdf"></i> Exporteer als PDF
+                    </button>
+                </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                    
                     <div class="md:col-span-3">
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Gevonden Vakken</label>
-                        <div id="dynamic-vak-container" class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm max-h-40 overflow-y-auto shadow-inner">
-                        </div>
+                        <div id="dynamic-vak-container" class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm max-h-40 overflow-y-auto shadow-inner"></div>
                     </div>
 
                     <div class="md:col-span-3">
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Gevonden Niveaus</label>
-                        <div id="dynamic-niveau-container" class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm max-h-40 overflow-y-auto shadow-inner">
-                        </div>
+                        <div id="dynamic-niveau-container" class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm max-h-40 overflow-y-auto shadow-inner"></div>
                     </div>
 
                     <div class="md:col-span-6 flex flex-col h-full justify-between">
@@ -103,8 +114,13 @@
                 </div>
             </div>
 
+            <div class="hidden print:block mb-6 text-center border-b-2 border-slate-800 pb-4">
+                <h1 class="text-2xl font-bold text-slate-900" id="pdf-title">SLO Leerdoelen Overzicht</h1>
+                <p class="text-slate-500 text-sm mt-1">Gegenereerd via het SLO Dashboard</p>
+            </div>
+
             <div id="view-container-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            <div id="view-container-matrix" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto p-2"></div>
+            <div id="view-container-matrix" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto p-2 print:border-none print:shadow-none print:p-0"></div>
 
         </div>
     </main>
@@ -125,21 +141,15 @@
                 const workbook = XLSX.read(data, { type: 'array' });
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 
-                // Belangrijk: we lezen het in als een rauwe matrix (array van arrays) om de lege regels bovenaan te omzeilen
                 const rawMatrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
                 if (rawMatrix.length === 0) return alert("Bestand is leeg!");
 
-                // Zoek de eerste echte rij met data (die fungeert als de kolomkoppen)
                 let headerRowIndex = 0;
                 for (let i = 0; i < Math.min(rawMatrix.length, 10); i++) {
                     const filledCells = rawMatrix[i].filter(cell => cell !== "").length;
-                    if (filledCells >= 2) {
-                        headerRowIndex = i;
-                        break;
-                    }
+                    if (filledCells >= 2) { headerRowIndex = i; break; }
                 }
 
-                // Haal de headers op. Als een kolom geen naam heeft, noemen we hem Kolom 1, Kolom 2 etc.
                 excelHeaders = rawMatrix[headerRowIndex].map((h, i) => h ? String(h).trim() : `Kolom ${i+1}`);
                 rawMatrixData = rawMatrix.slice(headerRowIndex + 1).filter(row => row.some(cell => cell !== ""));
 
@@ -162,30 +172,19 @@
             const select = document.getElementById(selectId);
             select.innerHTML = '';
             let targetIdx = -1;
-
             headers.forEach((h, idx) => {
                 const option = document.createElement('option');
-                option.value = idx;
-                option.text = h;
-                
-                // Slimme match
+                option.value = idx; option.text = h;
                 if (targetIdx === -1) {
-                    for(let kw of keywords) {
-                        if (h.toLowerCase().includes(kw)) {
-                            targetIdx = idx;
-                            break;
-                        }
-                    }
+                    for(let kw of keywords) { if (h.toLowerCase().includes(kw)) { targetIdx = idx; break; } }
                 }
                 select.appendChild(option);
             });
-
-            // Als hij niks vindt, geef hem een logische fallback
             if (targetIdx === -1) {
                 if(selectId === 'map-vak') targetIdx = 0;
                 if(selectId === 'map-niveau') targetIdx = 1 % headers.length;
                 if(selectId === 'map-domein') targetIdx = 2 % headers.length;
-                if(selectId === 'map-doel') targetIdx = headers.length - 1; // Doel staat vaak achteraan
+                if(selectId === 'map-doel') targetIdx = headers.length - 1;
             }
             select.value = targetIdx;
         }
@@ -196,7 +195,6 @@
             const idxDomein = parseInt(document.getElementById('map-domein').value);
             const idxDoel = parseInt(document.getElementById('map-doel').value);
 
-            // Zet de rauwe rijen om in schone objecten met de NIEUWE koppelingen
             parsedObjectsDataset = rawMatrixData.map(row => {
                 return {
                     vak: String(row[idxVak] || "").trim(),
@@ -206,7 +204,6 @@
                     fullText: row.join(" ").toLowerCase()
                 };
             });
-
             buildDynamicFilters();
             runFiltering();
         }
@@ -217,19 +214,14 @@
 
             parsedObjectsDataset.forEach(obj => {
                 if (obj.vak && obj.vak !== "-") setVakken.add(obj.vak);
-                
                 if (obj.niveau && obj.niveau !== "-") {
-                    obj.niveau.split(',').forEach(p => {
-                        let clean = p.trim();
-                        if(clean) setNiveaus.add(clean);
-                    });
+                    obj.niveau.split(',').forEach(p => { let clean = p.trim(); if(clean) setNiveaus.add(clean); });
                 }
             });
 
-            // Bouw Checkboxes voor Vakken
             const vakContainer = document.getElementById('dynamic-vak-container');
             vakContainer.innerHTML = '';
-            if(setVakken.size === 0) vakContainer.innerHTML = '<span class="text-slate-400 italic text-xs">Geen vakken gevonden in deze kolom.</span>';
+            if(setVakken.size === 0) vakContainer.innerHTML = '<span class="text-slate-400 italic text-xs">Geen vakken gevonden.</span>';
             Array.from(setVakken).sort().forEach(v => {
                 const label = document.createElement('label');
                 label.className = "flex items-start gap-2 cursor-pointer hover:text-indigo-600 transition font-medium text-slate-700 text-xs";
@@ -237,10 +229,9 @@
                 vakContainer.appendChild(label);
             });
 
-            // Bouw Checkboxes voor Niveaus
             const nivContainer = document.getElementById('dynamic-niveau-container');
             nivContainer.innerHTML = '';
-            if(setNiveaus.size === 0) nivContainer.innerHTML = '<span class="text-slate-400 italic text-xs">Geen niveaus gevonden in deze kolom.</span>';
+            if(setNiveaus.size === 0) nivContainer.innerHTML = '<span class="text-slate-400 italic text-xs">Geen niveaus gevonden.</span>';
             Array.from(setNiveaus).sort().forEach(n => {
                 const label = document.createElement('label');
                 label.className = "flex items-start gap-2 cursor-pointer hover:text-indigo-600 transition font-medium text-slate-700 text-xs";
@@ -255,25 +246,20 @@
             const checkedNiveaus = Array.from(document.querySelectorAll('.dyn-niv-cb:checked')).map(cb => cb.value);
 
             const gefilterdeData = parsedObjectsDataset.filter(obj => {
-                // Check vrije tekst
                 let matchQuery = query === "" || obj.fullText.includes(query);
-
-                // Check Vak
                 let matchVak = checkedVakken.length === 0;
-                if (checkedVakken.length > 0) {
-                    matchVak = checkedVakken.some(v => obj.vak.toLowerCase().includes(v));
-                }
-
-                // Check Niveau
+                if (checkedVakken.length > 0) { matchVak = checkedVakken.some(v => obj.vak.toLowerCase().includes(v)); }
                 let matchNiveau = checkedNiveaus.length === 0;
-                if (checkedNiveaus.length > 0) {
-                    matchNiveau = checkedNiveaus.some(n => obj.niveau.toLowerCase().includes(n));
-                }
-
+                if (checkedNiveaus.length > 0) { matchNiveau = checkedNiveaus.some(n => obj.niveau.toLowerCase().includes(n)); }
                 return matchQuery && matchVak && matchNiveau;
             });
 
             document.getElementById('counter-label').innerText = `${gefilterdeData.length} resultaten zichtbaar`;
+            
+            // Zet een mooie titel voor op de PDF afhankelijk van de filters
+            let pdfTitle = "SLO Leerdoelen";
+            if(checkedVakken.length > 0) pdfTitle += " - " + checkedVakken.join(', ');
+            document.getElementById('pdf-title').innerText = pdfTitle.toUpperCase();
 
             if (activeViewMode === 'cards') renderCards(gefilterdeData);
             else renderMatrix(gefilterdeData);
@@ -292,8 +278,8 @@
                 btnMatrix.classList.replace('bg-white', 'bg-transparent');
                 btnMatrix.classList.remove('shadow-sm');
                 
-                document.getElementById('view-container-cards').classList.remove('hidden');
-                document.getElementById('view-container-matrix').classList.add('hidden');
+                document.getElementById('view-container-cards').classList.remove('hidden', 'print:hidden');
+                document.getElementById('view-container-matrix').classList.add('hidden', 'print:hidden');
             } else {
                 btnMatrix.classList.replace('text-slate-600', 'text-indigo-700');
                 btnMatrix.classList.replace('bg-transparent', 'bg-white');
@@ -302,8 +288,8 @@
                 btnCards.classList.replace('bg-white', 'bg-transparent');
                 btnCards.classList.remove('shadow-sm');
                 
-                document.getElementById('view-container-matrix').classList.remove('hidden');
-                document.getElementById('view-container-cards').classList.add('hidden');
+                document.getElementById('view-container-matrix').classList.remove('hidden', 'print:hidden');
+                document.getElementById('view-container-cards').classList.add('hidden', 'print:hidden');
             }
             runFiltering();
         }
@@ -313,15 +299,14 @@
             container.innerHTML = '';
 
             if(data.length === 0) {
-                container.innerHTML = `<div class="col-span-full p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200">Geen leerdoelen gevonden. Pas je filters of kolomkoppeling aan.</div>`;
+                container.innerHTML = `<div class="col-span-full p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200">Geen leerdoelen gevonden.</div>`;
                 return;
             }
 
-            const displayData = data.slice(0, 150);
-
-            displayData.forEach((item) => {
+            data.forEach((item) => {
                 const card = document.createElement('div');
-                card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-indigo-500 flex flex-col justify-between hover:shadow-md transition";
+                // De 'print-card' class zorgt ervoor dat ze perfect op de PDF komen!
+                card.className = "print-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-indigo-500 flex flex-col justify-between";
                 card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start mb-3 gap-2">
@@ -334,37 +319,32 @@
                 `;
                 container.appendChild(card);
             });
-            
-            if(data.length > 150) {
-                container.innerHTML += `<div class="col-span-full p-4 text-center text-xs text-slate-500 bg-indigo-50/50 rounded-xl border border-indigo-100">Er zijn nog ${data.length - 150} extra doelen. Maak een selectie om ze te zien.</div>`;
-            }
         }
 
         function renderMatrix(data) {
             const container = document.getElementById('view-container-matrix');
             if(data.length === 0) {
-                container.innerHTML = `<div class="p-8 text-center text-slate-400">Geen data gevonden. Pas je filters of kolomkoppeling aan.</div>`;
+                container.innerHTML = `<div class="p-8 text-center text-slate-400">Geen data gevonden.</div>`;
                 return;
             }
 
-            let html = `<table class="w-full text-left text-xs border-collapse"><thead><tr class="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase tracking-wider">
+            let html = `<table class="print-matrix w-full text-left text-xs border-collapse border border-slate-200"><thead><tr class="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase tracking-wider">
                 <th class="p-3 font-bold border-r border-slate-200">Vak</th>
                 <th class="p-3 font-bold border-r border-slate-200">Niveau</th>
                 <th class="p-3 font-bold border-r border-slate-200">Domein</th>
                 <th class="p-3 font-bold">Leerdoel / Inhoud</th>
-            </tr></thead><tbody class="divide-y divide-slate-100">`;
+            </tr></thead><tbody class="divide-y divide-slate-200">`;
 
-            data.slice(0, 200).forEach(item => {
-                html += `<tr class="hover:bg-slate-50 transition align-top">
-                    <td class="p-3 text-slate-600 font-semibold border-r border-slate-200 whitespace-nowrap">${item.vak}</td>
+            data.forEach(item => {
+                html += `<tr class="hover:bg-slate-50 transition align-top print:break-inside-avoid">
+                    <td class="p-3 text-slate-600 font-semibold border-r border-slate-200">${item.vak}</td>
                     <td class="p-3 text-slate-500 border-r border-slate-200">${item.niveau}</td>
-                    <td class="p-3 text-slate-600 font-medium border-r border-slate-200 max-w-[150px] truncate" title="${item.domein}">${item.domein}</td>
+                    <td class="p-3 text-slate-600 font-medium border-r border-slate-200 max-w-[150px]">${item.domein}</td>
                     <td class="p-3 text-slate-800 leading-relaxed">${item.doel}</td>
                 </tr>`;
             });
 
             html += `</tbody></table>`;
-            if(data.length > 200) html += `<div class="p-3 text-center text-xs text-slate-500 bg-indigo-50/50 border-t border-indigo-100">Tabel afgekapt op 200 rijen wegens prestaties.</div>`;
             container.innerHTML = html;
         }
     </script>
