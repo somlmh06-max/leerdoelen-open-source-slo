@@ -8,22 +8,32 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        /* Speciale instellingen voor de PDF export */
+        /* Speciale instellingen voor de PDF export die luisteren naar de geselecteerde modus */
         @media print {
-            @page { margin: 1.5cm; } /* Witte marges op het A4'tje */
+            @page { margin: 1.5cm; size: A4 portrait; }
             body { background-color: white !important; }
-            /* Zorgt dat kaarten mooi naast elkaar staan op A4 en niet halverwege afbreken */
-            #view-container-cards { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; }
+            
+            /* Verberg de weergave die NIET actief is op het scherm */
+            body.show-cards-mode #view-container-matrix { display: none !important; }
+            body.show-matrix-mode #view-container-cards { display: none !important; }
+            
+            /* Als kaarten actief zijn: zet ze in een mooi print-grid */
+            body.show-cards-mode #view-container-cards { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; }
+            
             .print-card { break-inside: avoid !important; page-break-inside: avoid !important; box-shadow: none !important; border: 1px solid #cbd5e1 !important; border-left: 4px solid #4f46e5 !important; }
-            .print-matrix { font-size: 10px !important; }
+            
+            /* Als matrix actief is: zorg dat de tabel perfect print en tekst NIET afkapt */
+            .print-matrix { font-size: 10px !important; width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; }
+            .print-matrix th, .print-matrix td { padding: 6px !important; border: 1px solid #cbd5e1 !important; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; max-width: none !important; }
+            .print-matrix tr { break-inside: avoid !important; page-break-inside: avoid !important; }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased print:bg-white">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased print:bg-white show-cards-mode">
 
     <header class="bg-gradient-to-r from-indigo-700 to-blue-800 text-white shadow-md p-6 text-center print:hidden">
         <h1 class="text-3xl font-extrabold tracking-tight"><i class="fa-solid fa-map-location-dot mr-3"></i>SLO Smart Dashboard</h1>
-        <p class="text-indigo-100 mt-2 text-sm md:text-base">Genereer en exporteer je leerdoelkaarten naar PDF.</p>
+        <p class="text-indigo-100 mt-2 text-sm md:text-base">Genereer en exporteer je leerdoelkaarten of matrix exact zoals jij het wilt naar PDF.</p>
     </header>
 
     <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl print:p-0 print:m-0">
@@ -71,7 +81,7 @@
                         <i class="fa-solid fa-filter text-indigo-600 mr-2"></i> Stap 2: Filters & Weergave
                     </h2>
                     <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-file-pdf"></i> Exporteer als PDF
+                        <i class="fa-solid fa-file-pdf"></i> Exporteer Huidige Layout naar PDF
                     </button>
                 </div>
                 
@@ -91,18 +101,18 @@
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Vrij Zoeken (Onderwerp)</label>
                             <div class="relative mb-2">
                                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                                <input type="text" id="free-search" oninput="runFiltering()" placeholder="Zoek op tekst (bijv. klimaat, breuken)..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 p-3 text-sm focus:outline-none focus:border-indigo-600 transition">
+                                <input type="text" id="free-search" oninput="runFiltering()" placeholder="Zoek op tekst (bijv. klimaat)..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 p-3 text-sm focus:outline-none focus:border-indigo-600 transition">
                             </div>
                         </div>
                         
                         <div class="mt-4">
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Lay-out</label>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kies je Lay-out voor weergave én PDF:</label>
                             <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
                                 <button onclick="toggleViewMode('cards')" id="btn-view-cards" class="bg-white text-indigo-700 shadow-sm text-xs font-bold py-2.5 rounded-lg transition">
                                     <i class="fa-solid fa-address-card mr-1"></i> Leerdoelkaarten
                                 </button>
                                 <button onclick="toggleViewMode('matrix')" id="btn-view-matrix" class="text-slate-600 text-xs font-bold py-2.5 rounded-lg transition">
-                                    <i class="fa-solid fa-table-cells mr-1"></i> Matrix
+                                    <i class="fa-solid fa-table-cells mr-1"></i> Matrix / Tabel
                                 </button>
                             </div>
                         </div>
@@ -115,7 +125,7 @@
             </div>
 
             <div class="hidden print:block mb-6 text-center border-b-2 border-slate-800 pb-4">
-                <h1 class="text-2xl font-bold text-slate-900" id="pdf-title">SLO Leerdoelen Overzicht</h1>
+                <h1 class="text-2xl font-bold text-slate-900" id="pdf-title">SLO LEERDOELEN OVERZICHT</h1>
                 <p class="text-slate-500 text-sm mt-1">Gegenereerd via het SLO Dashboard</p>
             </div>
 
@@ -221,7 +231,7 @@
 
             const vakContainer = document.getElementById('dynamic-vak-container');
             vakContainer.innerHTML = '';
-            if(setVakken.size === 0) vakContainer.innerHTML = '<span class="text-slate-400 italic text-xs">Geen vakken gevonden.</span>';
+            if(setVakken.size === 0) vakContainer.innerHTML = '<span class="text-slate-400 italic text-xs">Geen vakken.</span>';
             Array.from(setVakken).sort().forEach(v => {
                 const label = document.createElement('label');
                 label.className = "flex items-start gap-2 cursor-pointer hover:text-indigo-600 transition font-medium text-slate-700 text-xs";
@@ -231,7 +241,7 @@
 
             const nivContainer = document.getElementById('dynamic-niveau-container');
             nivContainer.innerHTML = '';
-            if(setNiveaus.size === 0) nivContainer.innerHTML = '<span class="text-slate-400 italic text-xs">Geen niveaus gevonden.</span>';
+            if(setNiveaus.size === 0) nivContainer.innerHTML = '<span class="text-slate-400 italic text-xs">Geen niveaus.</span>';
             Array.from(setNiveaus).sort().forEach(n => {
                 const label = document.createElement('label');
                 label.className = "flex items-start gap-2 cursor-pointer hover:text-indigo-600 transition font-medium text-slate-700 text-xs";
@@ -256,8 +266,7 @@
 
             document.getElementById('counter-label').innerText = `${gefilterdeData.length} resultaten zichtbaar`;
             
-            // Zet een mooie titel voor op de PDF afhankelijk van de filters
-            let pdfTitle = "SLO Leerdoelen";
+            let pdfTitle = "SLO LEERDOELEN OVERZICHT";
             if(checkedVakken.length > 0) pdfTitle += " - " + checkedVakken.join(', ');
             document.getElementById('pdf-title').innerText = pdfTitle.toUpperCase();
 
@@ -271,6 +280,10 @@
             const btnMatrix = document.getElementById('btn-view-matrix');
             
             if (mode === 'cards') {
+                // Pas de body-klasse aan voor de CSS-printer instellingen
+                document.body.classList.add('show-cards-mode');
+                document.body.classList.remove('show-matrix-mode');
+
                 btnCards.classList.replace('text-slate-600', 'text-indigo-700');
                 btnCards.classList.replace('bg-transparent', 'bg-white');
                 btnCards.classList.add('shadow-sm');
@@ -278,9 +291,13 @@
                 btnMatrix.classList.replace('bg-white', 'bg-transparent');
                 btnMatrix.classList.remove('shadow-sm');
                 
-                document.getElementById('view-container-cards').classList.remove('hidden', 'print:hidden');
-                document.getElementById('view-container-matrix').classList.add('hidden', 'print:hidden');
+                document.getElementById('view-container-cards').classList.remove('hidden');
+                document.getElementById('view-container-matrix').classList.add('hidden');
             } else {
+                // Pas de body-klasse aan voor de CSS-printer instellingen
+                document.body.classList.add('show-matrix-mode');
+                document.body.classList.remove('show-cards-mode');
+
                 btnMatrix.classList.replace('text-slate-600', 'text-indigo-700');
                 btnMatrix.classList.replace('bg-transparent', 'bg-white');
                 btnMatrix.classList.add('shadow-sm');
@@ -288,8 +305,8 @@
                 btnCards.classList.replace('bg-white', 'bg-transparent');
                 btnCards.classList.remove('shadow-sm');
                 
-                document.getElementById('view-container-matrix').classList.remove('hidden', 'print:hidden');
-                document.getElementById('view-container-cards').classList.add('hidden', 'print:hidden');
+                document.getElementById('view-container-matrix').classList.remove('hidden');
+                document.getElementById('view-container-cards').classList.add('hidden');
             }
             runFiltering();
         }
@@ -305,7 +322,6 @@
 
             data.forEach((item) => {
                 const card = document.createElement('div');
-                // De 'print-card' class zorgt ervoor dat ze perfect op de PDF komen!
                 card.className = "print-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-indigo-500 flex flex-col justify-between";
                 card.innerHTML = `
                     <div>
@@ -328,7 +344,7 @@
                 return;
             }
 
-            let html = `<table class="print-matrix w-full text-left text-xs border-collapse border border-slate-200"><thead><tr class="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase tracking-wider">
+            let html = `<table class="print-matrix w-full text-left text-xs border-collapse"><thead><tr class="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase tracking-wider">
                 <th class="p-3 font-bold border-r border-slate-200">Vak</th>
                 <th class="p-3 font-bold border-r border-slate-200">Niveau</th>
                 <th class="p-3 font-bold border-r border-slate-200">Domein</th>
@@ -336,10 +352,10 @@
             </tr></thead><tbody class="divide-y divide-slate-200">`;
 
             data.forEach(item => {
-                html += `<tr class="hover:bg-slate-50 transition align-top print:break-inside-avoid">
-                    <td class="p-3 text-slate-600 font-semibold border-r border-slate-200">${item.vak}</td>
-                    <td class="p-3 text-slate-500 border-r border-slate-200">${item.niveau}</td>
-                    <td class="p-3 text-slate-600 font-medium border-r border-slate-200 max-w-[150px]">${item.domein}</td>
+                html += `<tr class="hover:bg-slate-50 transition align-top">
+                    <td class="p-3 text-slate-600 font-semibold border-r border-slate-200 whitespace-nowrap">${item.vak}</td>
+                    <td class="p-3 text-slate-500 border-r border-slate-200 whitespace-nowrap">${item.niveau}</td>
+                    <td class="p-3 text-slate-600 font-medium border-r border-slate-200 max-w-[150px] truncate print:max-w-none" title="${item.domein}">${item.domein}</td>
                     <td class="p-3 text-slate-800 leading-relaxed">${item.doel}</td>
                 </tr>`;
             });
